@@ -24,180 +24,124 @@ import org.kde.plasma.plasmoid
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.components as PlasmaComponents
 
-import QtLocation
-import QtPositioning
+import QtLocation 5.15
+import QtPositioning 5.15
 
 
 Item {
-    id: fullRoot
-
-    Layout.preferredWidth: grid.width
-    Layout.preferredHeight: grid.height
-
+    readonly property int mapZoomLevel: Plasmoid.configuration.mapZoomLevel
     readonly property bool layoutRow: Plasmoid.configuration.layoutRow
     readonly property bool showHostname: Plasmoid.configuration.showHostname
-    readonly property int mapSize: Plasmoid.configuration.mapSize
-    readonly property int mapZoomLevel: Plasmoid.configuration.mapZoomLevel
     readonly property bool useLabelThemeColor: Plasmoid.configuration.useLabelThemeColor
     readonly property string labelColor: Plasmoid.configuration.labelColor
     readonly property bool useLinkThemeColor: Plasmoid.configuration.useLinkThemeColor
     readonly property string linkColor: Plasmoid.configuration.linkColor
 
-    // property string mapLink: "https://www.openstreetmap.org/#map=" + mapZoomLevel + "/" + latitude + "/" + longitude
-    property string mapLink: "https://www.openstreetmap.org/?mlat=" + latitude + "&mlon=" + longitude + "#map=" + mapZoomLevel + "/" + latitude + "/" + longitude
-
-    function addMarker(latitude, longitude) {
-        debug_print("addMarker init")
-        var component = Qt.createComponent("Marker.qml")
-        if( component.status != Component.Ready )
-        {
-            if( component.status == Component.Error )
-                debug_print("Error creating Marker:"+ component.errorString() );
-            return; // or maybe throw
-        }
-        // removing previous markers
-        my_map.clearMapItems()
-        var item = component.createObject(
-                        grid, {
-                            coordinate: QtPositioning.coordinate(latitude, longitude)
-                        })
-        my_map.addMapItem(item)
-        debug_print("Added Marker: lat=" + latitude + "; long=" + longitude)
-    }
+    id: fullRoot
+    // Automatically adapt to the GridLayout’s implicit size
+    width: labelsContainer.implicitWidth
+    height: labelsContainer.implicitHeight
+    Layout.preferredWidth: labelsContainer.implicitWidth
+    Layout.preferredHeight: labelsContainer.implicitHeight
 
     GridLayout {
-        id: grid
-        rowSpacing: 10
-        columnSpacing: 10
-        flow: layoutRow ? GridLayout.LeftToRight : GridLayout.TopToBottom
+        id: labelsContainer
+        flow: GridLayout.LeftToRight
+        columns: 2
 
-        Item {
-            width: mapSize
-            height: width
-            Layout.alignment: layoutRow ? Qt.AlignLeft : Qt.AlignHCenter
+        QtControls.Label {
+            text: i18n("IP address:")
+            color: useLabelThemeColor ? Kirigami.Theme.textColor : labelColor
+        }
 
-            Plugin {
-                id: mapPlugin
-                name: "osm" // "mapboxgl", "esri", ...
-            }
+        LabelDelegate {
+            text: jsonData !== undefined && jsonData.ip ? jsonData.ip : "N/A"
+        }
 
-            Map {
-                id: my_map
-                anchors.fill: parent
-                plugin: mapPlugin
-                center: {
-                    if (jsonData !== undefined) {
-                        addMarker(latitude, longitude)
-                        return QtPositioning.coordinate(latitude, longitude)
-                    }
-                    addMarker(41.8902, 12.4922)
-                    return QtPositioning.coordinate(41.8902, 12.4922) // Rome
-                }
-                zoomLevel: mapZoomLevel
+        QtControls.Label {
+            text: i18n("Country:")
+            color: useLabelThemeColor ? Kirigami.Theme.textColor : labelColor
+        }
+
+        LabelDelegate {
+            text: jsonData !== undefined && jsonData.country ? jsonData.country : "N/A"
+        }
+
+        QtControls.Label {
+            text: i18n("Region:")
+            color: useLabelThemeColor ? Kirigami.Theme.textColor : labelColor
+        }
+
+        LabelDelegate {
+            text: jsonData !== undefined && jsonData.region ? jsonData.region : "N/A"
+        }
+
+        QtControls.Label {
+            text: i18n("Postal Code:")
+            color: useLabelThemeColor ? Kirigami.Theme.textColor : labelColor
+        }
+
+        LabelDelegate {
+            text: jsonData !== undefined && jsonData.postal ? jsonData.postal : "N/A"
+        }
+
+        QtControls.Label {
+            text: i18n("City:")
+            color: useLabelThemeColor ? Kirigami.Theme.textColor : labelColor
+        }
+
+        LabelDelegate {
+            text: jsonData !== undefined && jsonData.city ? jsonData.city : "N/A"
+        }
+
+        QtControls.Label {
+            text: i18n("Coordinates:")
+            color: useLabelThemeColor ? Kirigami.Theme.textColor : labelColor
+        }
+
+        LabelDelegate {
+            text: jsonData !== undefined && jsonData.loc ? jsonData.loc : "N/A"
+        }
+
+        QtControls.Label {
+            text: i18n("Hostname:")
+            color: useLabelThemeColor ? Kirigami.Theme.textColor : labelColor
+            visible: showHostname
+        }
+
+        LabelDelegate {
+            text: jsonData !== undefined && jsonData.hostname ? jsonData.hostname : "N/A"
+            visible: showHostname
+        }
+
+        QtControls.Button {
+            Layout.columnSpan: 2
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: parent.width
+            text: jsonData !== undefined ? i18n("Open map in the browser") : "N/A"
+            visible: jsonData !== undefined
+            onClicked: {
+                let mapLink = "https://www.openstreetmap.org/?mlat=" + latitude + "&mlon=" + longitude + "#map=" + mapZoomLevel + "/" + latitude + "/" + longitude
+                debug_print("[showMap onClicked] " + mapLink)
+                Qt.openUrlExternally(mapLink)
             }
         }
 
-        GridLayout {
-            id: labelsContainer
-            flow: GridLayout.LeftToRight
-            columns: 2
-            Layout.minimumWidth: 300
-            Layout.maximumWidth: 300
-            Layout.preferredWidth: 300
-
-            QtControls.Label {
-                text: i18n("IP address:")
-                color: useLabelThemeColor ? Kirigami.Theme.textColor : labelColor
+        QtControls.Button {
+            Layout.columnSpan: 2
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: parent.width
+            text: i18n("Update")
+            onClicked: {
+                root._triggerReloadOnClick()
             }
+        }
 
-            LabelDelegate {
-                text: jsonData !== undefined && jsonData.ip ? jsonData.ip : "N/A"
-            }
-
-            QtControls.Label {
-                text: i18n("Country:")
-                color: useLabelThemeColor ? Kirigami.Theme.textColor : labelColor
-            }
-
-            LabelDelegate {
-                text: jsonData !== undefined && jsonData.country ? jsonData.country : "N/A"
-            }
-
-            QtControls.Label {
-                text: i18n("Region:")
-                color: useLabelThemeColor ? Kirigami.Theme.textColor : labelColor
-            }
-
-            LabelDelegate {
-                text: jsonData !== undefined && jsonData.region ? jsonData.region : "N/A"
-            }
-
-            QtControls.Label {
-                text: i18n("Postal Code:")
-                color: useLabelThemeColor ? Kirigami.Theme.textColor : labelColor
-            }
-
-            LabelDelegate {
-                text: jsonData !== undefined && jsonData.postal ? jsonData.postal : "N/A"
-            }
-
-            QtControls.Label {
-                text: i18n("City:")
-                color: useLabelThemeColor ? Kirigami.Theme.textColor : labelColor
-            }
-
-            LabelDelegate {
-                text: jsonData !== undefined && jsonData.city ? jsonData.city : "N/A"
-            }
-
-            QtControls.Label {
-                text: i18n("Coordinates:")
-                color: useLabelThemeColor ? Kirigami.Theme.textColor : labelColor
-            }
-
-            LabelDelegate {
-                text: jsonData !== undefined && jsonData.loc ? jsonData.loc : "N/A"
-            }
-
-            QtControls.Label {
-                text: i18n("Hostname:")
-                color: useLabelThemeColor ? Kirigami.Theme.textColor : labelColor
-                visible: showHostname
-            }
-
-            LabelDelegate {
-                text: jsonData !== undefined && jsonData.hostname ? jsonData.hostname : "N/A"
-                visible: showHostname
-            }
-
-            QtControls.Label {
-                Layout.columnSpan: 2
-                Layout.alignment: Qt.AlignHCenter
-                color: fullRoot.useLinkThemeColor ? Kirigami.Theme.highlightColor : fullRoot.linkColor
-                font.bold: true
-                wrapMode: Text.Wrap
-                text: jsonData !== undefined ? i18n("Open map in the browser") : "N/A"
-                visible: jsonData !== undefined
-
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    hoverEnabled: false
-                    onClicked: Qt.openUrlExternally(mapLink)
-                }
-            }
-
-            QtControls.Button {
-                Layout.columnSpan: 2
-                Layout.alignment: Qt.AlignHCenter
-                Layout.preferredWidth: parent.width
-                text: i18n("Update")
-                onClicked: {
-                    debug_print("[Update onClicked]")
-                    root.reloadData()
-                    // abortTooLongConnection()
-                }
-            }
+        Map {
+            id: map
+            plugin: Plugin { name: "mapboxgl" }
+            center: QtPositioning.coordinate(59.91, 10.75) // Oslo
+            zoomLevel: 14
         }
     }
 }
