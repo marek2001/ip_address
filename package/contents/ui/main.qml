@@ -64,7 +64,12 @@ PlasmoidItem {
 	property string curVPNstatus: "unknown"
 	property var reloadInProgress: false
 
-	property bool debug: false
+	// pending callbacks used by getIPdata() -> executable_curl.onNewData
+	// these allows the retry mechanism when a request to ipinfo fails
+    property var _pendingSuccessCallback: null
+    property var _pendingFailureCallback: null
+
+	property bool debug: true
 
 	// used to execute 'send notification commands'
 	Plasma5Support.DataSource {
@@ -141,24 +146,63 @@ PlasmoidItem {
 			disconnectSource(sourceName)
 
 			if (exitStatus !== 0) {
-            	debug_print(
-					"Process crashed or failed to start: " + sourceName +
-					". Status: " + exitStatus + ". Stderr: " + stderr)
+            	var msg = "Process crashed or failed to start: " + sourceName +
+						  ". Status: " + exitStatus + ". Stderr: " + stderr
+
+				if (_pendingFailureCallback) {
+					// NOTE: this callback is important because it deals with
+					// the retry logic
+					var fcb = _pendingFailureCallback
+					_pendingSuccessCallback = null
+					_pendingFailureCallback = null
+					fcb(msg)
+				} else {
+					// fallback: ensure reloadInProgress isn't left true
+					reloadInProgress = false
+					failureCallback(msg)
+				}
 				return
 			}
 
 			if (exitCode !== 0) {
-				debug_print(
-					"Command exited with error: " + sourceName +
-					". Code: " + exitCode + ". Stderr: " + stderr)
+				var msg = "Command exited with error: " + sourceName +
+						  ". Code: " + exitCode + ". Stderr: " + stderr
+				if (_pendingFailureCallback) {
+					var fcb = _pendingFailureCallback
+					_pendingSuccessCallback = null
+					_pendingFailureCallback = null
+					fcb(msg)
+				} else {
+					reloadInProgress = false
+					failureCallback(msg)
+				}
 				return
 			}
 
 			try {
 				var json = JSON.parse(stdout)
-				successCallback(json)
+				if (_pendingSuccessCallback) {
+					var cb = _pendingSuccessCallback
+					_pendingSuccessCallback = null
+					_pendingFailureCallback = null
+					cb(json) // this is your reloadData's inline success callback
+				} else {
+					// fallback: call global success handler and reset state
+					reloadInProgress = false
+					successCallback(json)
+				}
 			} catch (e) {
-				failureCallback("Invalid JSON: " + e)
+				var msg = "Invalid JSON: " + e
+
+				if (_pendingFailureCallback) {
+					var fcb = _pendingFailureCallback
+					_pendingSuccessCallback = null
+					_pendingFailureCallback = null
+					fcb(msg)
+				} else {
+					reloadInProgress = false
+					failureCallback(msg)
+				}
 			}
         }
 	}
@@ -187,7 +231,7 @@ PlasmoidItem {
 			debug_print("[timer_vpn.onTriggered] vpnKeywords: " + vpnKeywords + "; prevVPNstatus=" + prevVPNstatus + "; curVPNstatus=" + curVPNstatus)
 			executable_vpn.exec("nmcli c show --active | grep -E '" + vpnKeywords + "'")
 
-			if (prevVPNstatus != curVPNstatus) {
+			if ((prevVPNstatus != "unknown") && (prevVPNstatus != curVPNstatus)) {
 				// better to wait for some time in order for the connection
 				// to stabilize
 				var wait_for = 5000
@@ -243,13 +287,25 @@ PlasmoidItem {
 	function getIPdata(successCallback, failureCallback) {
 		debug_print("[getIPdata] running curl")
 
+		// store callbacks for the async handler to call later
+        _pendingSuccessCallback = successCallback
+        _pendingFailureCallback = failureCallback
+
 		try {
 			// -s for silent, --max-time for timeout
 			let cmd = "curl -s --max-time 5 https://ipinfo.io/json"
+
+			// NOTE: to test if the retry logic works correctly, uncomment
+			// this line
+			// let cmd = "curl -s --max-time 5 https://this-will-fail.meow"
+
 			executable_curl.exec(cmd)
 			return true
 		} catch (err) {
 			debug_print("[getIPdata] Error " + err)
+			// clear pending callbacks on immediate failure
+            _pendingSuccessCallback = null
+            _pendingFailureCallback = null
 			return false
 		}
 	}
@@ -288,7 +344,7 @@ PlasmoidItem {
 			reloadInProgress = true
 		}
 
-		debug_print("[reloadData] attempt " + attempt)
+		debug_print("[reloadData] reloadInProgress=" + reloadInProgress + " attempt " + attempt)
 
 		let ok = getIPdata(
 			function(jsonData) {
@@ -348,7 +404,11 @@ PlasmoidItem {
 
 		onClicked: (mouse)=> {
 			if (mouse.button == Qt.MiddleButton) {
-                root.reloadData()
+                if (!root.reloadInProgress) {
+					root.reloadData()
+				} else {
+					root.debug_print("[onClicked] Reload already in progress, ignoring middle click")
+				}
             } else {
                 root.expanded = !root.expanded
             }
