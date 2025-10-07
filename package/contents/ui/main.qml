@@ -250,6 +250,14 @@ PlasmoidItem {
 		imagePath: Qt.resolvedUrl("../icons/vpn-shield-off.svg")
 	}
 
+	function _triggerReloadOnClick() {
+		if (!root.reloadInProgress) {
+			root.reloadData()
+		} else {
+			root.debug_print("[onClicked] Reload already in progress, ignoring middle click")
+		}
+	}
+
 	function getIconSize(iconSize, compactRoot) {
 		switch(iconSize) {
 			case 1:
@@ -404,11 +412,7 @@ PlasmoidItem {
 
 		onClicked: (mouse)=> {
 			if (mouse.button == Qt.MiddleButton) {
-                if (!root.reloadInProgress) {
-					root.reloadData()
-				} else {
-					root.debug_print("[onClicked] Reload already in progress, ignoring middle click")
-				}
+                _triggerReloadOnClick()
             } else {
                 root.expanded = !root.expanded
             }

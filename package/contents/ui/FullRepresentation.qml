@@ -136,12 +136,5 @@ Item {
                 root._triggerReloadOnClick()
             }
         }
-
-        Map {
-            id: map
-            plugin: Plugin { name: "mapboxgl" }
-            center: QtPositioning.coordinate(59.91, 10.75) // Oslo
-            zoomLevel: 14
-        }
     }
 }
