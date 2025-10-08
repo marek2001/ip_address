@@ -28,7 +28,13 @@ jobs:
       run: |
         echo "PACKAGE_NAME=${PACKAGE_DIR}-${{ github.ref_name }}" >> $GITHUB_ENV
 
+    - name: Debug current directory
+      run: |
+        pwd
+        ls -R
+
     - name: Prepare package directory
+      working-directory: ${{ github.workspace }}
       run: |
         mkdir -p dist/${PACKAGE_DIR}
         cp -r contents dist/${PACKAGE_DIR}
