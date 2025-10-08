@@ -24,18 +24,21 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Set full package directory name
+        run: echo "PACKAGE_NAME=${PACKAGE_DIR}-${{ github.ref_name }}" >> $GITHUB_ENV
+
     - name: Prepare package directory
       run: |
         mkdir -p dist/${PACKAGE_DIR}
         cp -r contents dist/${PACKAGE_DIR}
-        cp -r translations/po dist/${PACKAGE_DIR}
+        cp -r translations dist/${PACKAGE_DIR}
         cp metadata.json dist/${PACKAGE_DIR}
 
     - name: Create zip archive
       run: |
         cd dist
-        zip -r ${PACKAGE_DIR}.zip ${PACKAGE_DIR}
-        mv ${PACKAGE_DIR}.zip ${PACKAGE_DIR}.plasmoid
+        zip -r ${PACKAGE_NAME}.zip ${PACKAGE_DIR}
+        mv ${PACKAGE_NAME}.zip ${PACKAGE_NAME}.plasmoid
 
     - name: Upload release asset
       uses: softprops/action-gh-release@v2
