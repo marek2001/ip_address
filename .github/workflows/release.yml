@@ -25,7 +25,8 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Set full package directory name
-        run: echo "PACKAGE_NAME=${PACKAGE_DIR}-${{ github.ref_name }}" >> $GITHUB_ENV
+      run: |
+        echo "PACKAGE_NAME=${PACKAGE_DIR}-${{ github.ref_name }}" >> $GITHUB_ENV
 
     - name: Prepare package directory
       run: |
