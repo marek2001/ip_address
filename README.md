@@ -25,9 +25,6 @@ The primary functions of the widget (check IP address) should work correctly eve
 * `libnotify-bin`: this is for showing notifications when clicking links, thus copying the link's content to the clipboard.
 `sudo apt install libnotify-bin`
 * `nmcli`: this is part of the `network-manager` package. It'll check the status of the VPN by executing the command `nmcli c show --active`; if a VPN is active, there should be some entries containing the keywords `vpn` or `tun`. It should already be installed in Ubuntu. Don't know about other distros (let me know in the comments or by opening an issue).
-* `QtPositioning` and `QtLocation`. In particular, for Ubuntu and:
-  * Plasma 5: `sudo apt-get install libqt5positioning5 libqt5location5 qtlocation5-dev qtpositioning5-dev qml-module-qtlocation qml-module-qtpositioning`
-  * Plasma 6: `sudo apt-get install libqt6positioning6 libqt6location6 qml6-module-qtlocation qml6-module-qtpositioning`
 
 ## Installation
 
@@ -47,6 +44,11 @@ The primary functions of the widget (check IP address) should work correctly eve
 
 ## FAQ
 
-### Can you add an option to use a different map provider other than OpenStreetMap?
+### Where did the map go?
 
-No, because most other map providers require an API key, whereas OSM does not need it. This means everyone should be able to view the map.
+I tested the Plasma 6 version with Kubuntu 24.04 and 25.04. Even when
+`libqt6positioning6 libqt6location6 qml6-module-qtlocation qml6-module-qtpositioning`
+are installed on the system, the interactive map can't be shown and the logs
+showed this error: *"The geoservices provider is not supported"*.
+
+If you have any idea why this happens, let me know!

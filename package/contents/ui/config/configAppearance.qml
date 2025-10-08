@@ -30,7 +30,6 @@ KCM.SimpleKCM {
     Layout.maximumWidth: parent.width
     Layout.preferredWidth: parent.width
 
-    property alias cfg_mapSize: mapSizeSpin.value
     property alias cfg_mapZoomLevel: mapZoomLevelSpin.value
     property alias cfg_showHostname: showHostname.checked
     property alias cfg_layoutRow: layoutRow.checked
@@ -40,20 +39,6 @@ KCM.SimpleKCM {
     property alias cfg_linkColor: linkColorRectangle.color
 
     Kirigami.FormLayout {
-
-        QtControls.SpinBox {
-            id: mapSizeSpin
-            Kirigami.FormData.label: i18n("Map Size:")
-            from: 50
-            to: 500
-            stepSize: 1
-            textFromValue: function(value) {
-                return qsTr("%1 px").arg(value)
-            }
-            valueFromText: function (text) {
-                return parseInt(text)
-            }
-        }
 
         QtControls.SpinBox {
             id: mapZoomLevelSpin

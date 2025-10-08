@@ -39,9 +39,6 @@
     </group>
 
     <group name="Appearance">
-        <entry name="mapSize" type="int">
-            <default>150</default>
-        </entry>
         <entry name="mapZoomLevel" type="int">
             <default>13</default>
         </entry>

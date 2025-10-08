@@ -24,9 +24,6 @@ import org.kde.plasma.plasmoid
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.components as PlasmaComponents
 
-import QtLocation 5.15
-import QtPositioning 5.15
-
 
 Item {
     readonly property int mapZoomLevel: Plasmoid.configuration.mapZoomLevel
