@@ -69,7 +69,7 @@ PlasmoidItem {
     property var _pendingSuccessCallback: null
     property var _pendingFailureCallback: null
 
-	property bool debug: true
+	property bool debug: false
 
 	// used to execute 'send notification commands'
 	Plasma5Support.DataSource {
