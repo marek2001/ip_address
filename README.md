@@ -52,3 +52,16 @@ are installed on the system, the interactive map can't be shown and the logs
 showed this error: *"The geoservices provider is not supported"*.
 
 If you have any idea why this happens, let me know!
+
+
+## How to contribute
+
+PRs are welcomed. Here are the recommended steps to contribute to this widget:
+
+1. fork this repository.
+2. download the repository: `git clone https://github.com/<YOUR-USERNAME>/ip_address.git`
+3. enter the project directory: `cd ip_address`
+4. create a new branch: `git branch -d YOUR-BRANCH-NAME`
+5. do the necessary edits and commit them.
+6. push your branch to your remote: `git push origin YOUR-BRANCH-NAME`
+7. open the PR.
