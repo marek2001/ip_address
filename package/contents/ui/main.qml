@@ -435,6 +435,7 @@ PlasmoidItem {
 					id: svg
 					imagePath: getIconPath(false)
 				}
+				visible:showFlagInCompact
 			}
 
 			QtControls.Label {
