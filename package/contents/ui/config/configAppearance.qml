@@ -31,7 +31,7 @@ KCM.SimpleKCM {
     Layout.preferredWidth: parent.width
 
     property alias cfg_mapZoomLevel: mapZoomLevelSpin.value
-    property alias cfg_showHostname: showHostname.checked
+    property alias cfg_showOrganization: showOrganization.checked
     property alias cfg_layoutRow: layoutRow.checked
     property alias cfg_useLabelThemeColor: labelThemeColorCheckBox.checked
     property alias cfg_labelColor: labelColorRectangle.color
@@ -144,9 +144,9 @@ KCM.SimpleKCM {
         }
 
         QtControls.CheckBox {
-            id: showHostname
+            id: showOrganization
             Kirigami.FormData.label: i18n("Others:")
-            text: i18n("Show host name")
+            text: i18n("Show organization name")
         }
 
     }

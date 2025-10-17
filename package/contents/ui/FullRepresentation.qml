@@ -28,7 +28,7 @@ import org.kde.plasma.components as PlasmaComponents
 Item {
     readonly property int mapZoomLevel: Plasmoid.configuration.mapZoomLevel
     readonly property bool layoutRow: Plasmoid.configuration.layoutRow
-    readonly property bool showHostname: Plasmoid.configuration.showHostname
+    readonly property bool showOrganization: Plasmoid.configuration.showOrganization
     readonly property bool useLabelThemeColor: Plasmoid.configuration.useLabelThemeColor
     readonly property string labelColor: Plasmoid.configuration.labelColor
     readonly property bool useLinkThemeColor: Plasmoid.configuration.useLinkThemeColor
@@ -101,14 +101,16 @@ Item {
         }
 
         QtControls.Label {
-            text: i18n("Hostname:")
+            text: i18n("Organization:")
             color: useLabelThemeColor ? Kirigami.Theme.textColor : labelColor
-            visible: showHostname
+            visible: showOrganization
         }
 
         LabelDelegate {
-            text: jsonData !== undefined && jsonData.hostname ? jsonData.hostname : "N/A"
-            visible: showHostname
+            text: jsonData !== undefined && jsonData.org ? jsonData.org : "N/A"
+            Layout.maximumWidth: 300
+            wrapMode: Text.WordWrap //Text wrap in case of very long organisation names
+            visible: showOrganization
         }
 
         QtControls.Button {
